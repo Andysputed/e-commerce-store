@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { useAppContext } from "../context";
-import { ShieldCheck, ChevronRight, Lock } from "lucide-react";
+import { ShieldCheck, ChevronRight, Lock, Plus, Minus } from "lucide-react";
 
 
 
 export function Checkout() {
-  const { cart, cartTotal } = useAppContext();
+  const { cart, cartTotal, updateQuantity } = useAppContext();
   const navigate = useNavigate();
   const [phone, setPhone] = useState("+254");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -105,7 +105,24 @@ export function Checkout() {
                 
                 <div className="flex-1">
                   <h4 className="text-[#ECECEC] font-['Playfair_Display']">{item.product.name}</h4>
-                  <div className="text-sm text-[#888]">{item.product.volume} • Qty {item.quantity}</div>
+                  <div className="text-sm text-[#888]">{item.product.volume}</div>
+                  <div className="flex items-center gap-3 mt-2">
+                    <button 
+                      type="button"
+                      onClick={() => updateQuantity(item.product.id, -1)}
+                      className="p-1 rounded-full bg-[#2A2A2A] hover:bg-[#333] text-[#ECECEC] transition-colors"
+                    >
+                      <Minus size={14} />
+                    </button>
+                    <span className="text-[#ECECEC] text-sm font-medium w-4 text-center">{item.quantity}</span>
+                    <button 
+                      type="button"
+                      onClick={() => updateQuantity(item.product.id, 1)}
+                      className="p-1 rounded-full bg-[#2A2A2A] hover:bg-[#333] text-[#ECECEC] transition-colors"
+                    >
+                      <Plus size={14} />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="text-right">

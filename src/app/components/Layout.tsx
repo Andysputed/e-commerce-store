@@ -1,6 +1,6 @@
 import React from "react";
 import { Outlet, Link, useLocation } from "react-router";
-import { ShoppingBag, Menu, Activity } from "lucide-react";
+import { ShoppingCart, Menu, Activity } from "lucide-react";
 import { useAppContext } from "../context";
 import { motion } from "motion/react";
 
@@ -33,7 +33,7 @@ export function Layout() {
 
           {!isCheckoutOrSuccess && (
             <Link to="/checkout" className="relative text-[#D4AF37] p-2">
-              <ShoppingBag size={24} />
+              <ShoppingCart size={24} />
               {cartCount > 0 && (
                 <motion.div
                   initial={{ scale: 0 }}

@@ -19,6 +19,7 @@ type CartItem = {
 interface AppContextType {
   cart: CartItem[];
   addToCart: (product: Product) => void;
+  updateQuantity: (productId: string, delta: number) => void;
   cartCount: number;
   cartTotal: number;
 }
@@ -42,6 +43,18 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const updateQuantity = (productId: string, delta: number) => {
+    setCart((prev) => 
+      prev
+        .map((item) => 
+          item.product.id === productId 
+            ? { ...item, quantity: item.quantity + delta }
+            : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
+  };
+
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
   const cartTotal = cart.reduce(
     (acc, item) => acc + item.product.price * item.quantity,
@@ -49,7 +62,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   );
 
   return (
-    <AppContext.Provider value={{ cart, addToCart, cartCount, cartTotal }}>
+    <AppContext.Provider value={{ cart, addToCart, updateQuantity, cartCount, cartTotal }}>
       {children}
     </AppContext.Provider>
   );
