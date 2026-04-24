@@ -6,7 +6,7 @@ import { ShieldCheck, ChevronRight, Lock, Plus, Minus } from "lucide-react";
 import { supabase } from "../context"; // Ensure this matches your project structure
 
 export function Checkout() {
-  const { cart, cartTotal, updateQuantity } = useAppContext();
+  const { cart, cartTotal, updateQuantity ,clearCart} = useAppContext();
   const navigate = useNavigate();
   const [phone, setPhone] = useState("+254");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -69,6 +69,7 @@ export function Checkout() {
 
       // 3. LISTEN FOR SUCCESS (Real-time)
       // Instead of navigating, we set up a subscription to this specific order
+     // 3. LISTEN FOR SUCCESS (Real-time)
       const channel = supabase
         .channel(`order-update-${order.id}`)
         .on(
@@ -81,8 +82,9 @@ export function Checkout() {
           },
           (payload) => {
             if (payload.new.status === 'Paid') {
-              supabase.removeChannel(channel); // Clean up
-              navigate("/success"); // ONLY navigate now
+              supabase.removeChannel(channel); // Clean up listener
+              clearCart();                     // <-- EMPTY THE CART HERE
+              navigate("/success");            // Navigate to success screen
             }
           }
         )
