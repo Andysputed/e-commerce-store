@@ -4,7 +4,12 @@ import { Layout } from "./components/Layout";
 import { Storefront } from "./components/Storefront";
 import { Checkout } from "./components/Checkout";
 import { Success } from "./components/Success";
-import { AdminDashboard } from "./components/AdminDashboard";
+
+// 1. REMOVE the direct AdminDashboard import
+// import { AdminDashboard } from "./components/AdminDashboard";
+
+// 2. ADD the new secure AdminRoute import
+import AdminRoute from "./components/AdminRoute";
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +23,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    Component: AdminDashboard,
+    // 3. SWAP the component here to point to the secure wrapper
+    Component: AdminRoute, 
   }
 ]);

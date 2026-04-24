@@ -3,8 +3,7 @@ import { useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { useAppContext } from "../context";
 import { ShieldCheck, ChevronRight, Lock, Plus, Minus } from "lucide-react";
-
-
+import { supabase } from "../context"; // Ensure this matches your project structure
 
 export function Checkout() {
   const { cart, cartTotal, updateQuantity } = useAppContext();
@@ -12,7 +11,7 @@ export function Checkout() {
   const [phone, setPhone] = useState("+254");
   const [isProcessing, setIsProcessing] = useState(false);
 
- const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (phone.length < 9) {
@@ -22,7 +21,7 @@ export function Checkout() {
     
     setIsProcessing(true);
 
-    // 1. THE BULLETPROOF PHONE FORMATTER (Strips the '+')
+    // Phone formatting logic
     let cleanPhone = phone.replace(/\D/g, ""); 
     if (cleanPhone.startsWith("0")) {
       cleanPhone = "254" + cleanPhone.slice(1);
@@ -31,6 +30,27 @@ export function Checkout() {
     }
 
     try {
+      // 1. Create the Order in Supabase first
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert([
+          { 
+            total_price: cartTotal, 
+            items: cart.map(item => ({
+              id: item.product.id,
+              name: item.product.name,
+              quantity: item.quantity,
+              price: item.product.price
+            })),
+            status: 'Pending' // Explicitly set initial status
+          }
+        ])
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // 2. Trigger M-Pesa Edge Function with the Order ID
       const response = await fetch(`${(import.meta as any).env.VITE_SUPABASE_URL}/functions/v1/mpesa-checkout`, {
         method: "POST",
         headers: {
@@ -38,41 +58,43 @@ export function Checkout() {
           "Authorization": `Bearer ${(import.meta as any).env.VITE_SUPABASE_ANON_KEY}`
         },
         body: JSON.stringify({
-          action: "pay",
-          phone: cleanPhone, // WE ARE SENDING THE CLEANED NUMBER
-          amount: Math.round(cartTotal) // DARAJA HATES DECIMALS
-        }),
+          action: "pay", // Required by your updated Edge Function
+          cart: cart,
+          phone: cleanPhone,
+          orderId: order.id // Pass the ID to link payment to order
+        })
       });
 
-      const data = await response.json();
-      const safaricomCode = data.safaricomResponse?.ResponseCode;
+      if (!response.ok) throw new Error("Payment trigger failed");
 
-      // 2. THE TRUTH DETECTOR
-      if (response.ok && safaricomCode === "0") {
-        console.log("✅ REAL STK Push Triggered!", data);
-        setTimeout(() => {
-          navigate("/success");
-        }, 5000); 
+      // 3. LISTEN FOR SUCCESS (Real-time)
+      // Instead of navigating, we set up a subscription to this specific order
+      const channel = supabase
+        .channel(`order-update-${order.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'orders',
+            filter: `id=eq.${order.id}`,
+          },
+          (payload) => {
+            if (payload.new.status === 'Paid') {
+              supabase.removeChannel(channel); // Clean up
+              navigate("/success"); // ONLY navigate now
+            }
+          }
+        )
+        .subscribe();
 
-      } else {
-        // THIS CATCHES THE SILENT DARAJA ERRORS
-        console.error("❌ Daraja Rejected It:", data);
-        const errorMessage = 
-          data.safaricomResponse?.errorMessage || 
-          data.safaricomResponse?.ResponseDescription || 
-          data.error || 
-          "Unknown Error";
-          
-        alert(`Safaricom Error: ${errorMessage}`);
-        setIsProcessing(false);
-      }
-
-    } catch (error) {
-      console.error("Network error:", error);
-      alert("Could not connect to the payment server.");
+    } catch (error: any) {
       setIsProcessing(false);
+      console.error("Checkout Error:", error);
+      alert(error.message || "There was an issue processing your order. Please try again.");
     }
   };
+
   return (
     <div className="flex-1 max-w-[1200px] w-full mx-auto p-4 md:p-8 flex flex-col lg:flex-row gap-8 lg:gap-16 items-start justify-center py-12 lg:py-20">
       
@@ -145,7 +167,6 @@ export function Checkout() {
 
       {/* Right: Secure M-Pesa Input */}
       <div className="w-full lg:w-[45%] bg-[#111] border border-[#2A2A2A] rounded-2xl p-6 md:p-10 relative overflow-hidden">
-        {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-[#C27A2F]/5 blur-[100px] rounded-full pointer-events-none"></div>
 
         <div className="flex items-center gap-3 text-[#31C48D] mb-8 bg-[#31C48D]/10 w-fit px-4 py-2 rounded-full border border-[#31C48D]/20">
@@ -195,7 +216,6 @@ export function Checkout() {
             ) : (
               <>
                 <span className="relative z-10">TRIGGER M-PESA PAYMENT</span>
-                {/* Embedded pulse effect container */}
                 <div className="absolute inset-0 rounded-lg border-2 border-[#D4AF37]/50 animate-pulse"></div>
               </>
             )}

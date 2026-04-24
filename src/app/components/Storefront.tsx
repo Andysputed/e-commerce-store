@@ -3,66 +3,25 @@ import { motion } from "motion/react";
 import { useAppContext, Product } from "../context";
 import { Plus, Filter, Search } from "lucide-react";
 
-const PRODUCTS: Product[] = [
-  {
-    id: "1",
-    name: "Singleton 12YO",
-    category: "Whiskeys",
-    price: 8500,
-    image: "https://images.unsplash.com/photo-1744730850404-43e48b576470?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwd2hpc2tleSUyMGJvdHRsZSUyMGRhcmslMjBiYWNrZ3JvdW5kfGVufDF8fHx8MTc3NTcyMTc1OXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-    volume: "750ml",
-    alcoholContent: "40%",
-    stock: 24,
-  },
-  {
-    id: "2",
-    name: "Tusker Cider",
-    category: "Beers",
-    price: 350,
-    image: "https://images.unsplash.com/photo-1554171374-8618b3ce64c4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZWVyJTIwY2lkZXIlMjBib3R0bGUlMjBkYXJrJTIwYmFja2dyb3VuZHxlbnwxfHx8fDE3NzU3MjE3NTl8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-    volume: "500ml",
-    alcoholContent: "4.5%",
-    stock: 120,
-  },
-  {
-    id: "3",
-    name: "Grey Goose Vodka",
-    category: "Vodkas",
-    price: 6500,
-    image: "https://images.unsplash.com/photo-1686722784124-2e191a578b82?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjB2b2RrYSUyMGJvdHRsZSUyMHNvZnQlMjBsaXR8ZW58MXx8fHwxNzc1NzIxNzU5fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-    volume: "1L",
-    alcoholContent: "40%",
-    stock: 15,
-  },
-  {
-    id: "4",
-    name: "Penfolds Bin 389",
-    category: "Wine",
-    price: 9500,
-    image: "https://images.unsplash.com/photo-1695048475729-f82a29f68e72?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyZWQlMjB3aW5lJTIwYm90dGxlJTIwcHJlbWl1bSUyMGRhcmt8ZW58MXx8fHwxNzc1NzIxNzU5fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-    volume: "750ml",
-    alcoholContent: "14.5%",
-    stock: 8,
-  },
-  {
-    id: "5",
-    name: "Glenfiddich 18YO",
-    category: "Whiskeys",
-    price: 18500,
-    image: "https://images.unsplash.com/photo-1744730850404-43e48b576470?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwd2hpc2tleSUyMGJvdHRsZSUyMGRhcmslMjBiYWNrZ3JvdW5kfGVufDF8fHx8MTc3NTcyMTc1OXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-    volume: "750ml",
-    alcoholContent: "40%",
-    stock: 5,
-  },
-];
-
 const CATEGORIES = ["All", "Whiskeys", "Vodkas", "Beers", "Wine"];
 
 export function Storefront() {
-  const { addToCart } = useAppContext();
+  const { addToCart, products, isLoading } = useAppContext();
   const [activeCategory, setActiveCategory] = React.useState("All");
 
-  const filteredProducts = activeCategory === "All" ? PRODUCTS : PRODUCTS.filter(p => p.category === activeCategory);
+  const filteredProducts = activeCategory === "All" 
+    ? products 
+    : products.filter(p => p.category === activeCategory);
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center h-screen bg-[#0A0A0A]">
+        <div className="text-[#D4AF37] font-['Playfair_Display'] text-xl animate-pulse">
+          Opening the Cellar...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col md:flex-row max-w-[1600px] mx-auto w-full">
@@ -124,7 +83,6 @@ export function Storefront() {
               className="group flex flex-col bg-[#111] rounded-xl border border-[#2A2A2A] hover:border-[#C27A2F]/30 overflow-hidden relative transition-colors duration-500"
             >
               <div className="relative aspect-[3/4] bg-[#0A0A0A] overflow-hidden flex items-center justify-center p-6 group-hover:bg-[#151515] transition-colors">
-                {/* Ambient Underlighting Effect */}
                 <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-[#C27A2F]/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-700 blur-2xl"></div>
                 
                 <img 
@@ -164,7 +122,6 @@ export function Storefront() {
                     className="relative bg-[#C27A2F] text-black h-12 w-12 rounded-full flex items-center justify-center hover:bg-[#D4AF37] transition-colors shadow-[0_0_15px_rgba(194,122,47,0.4)]"
                   >
                     <Plus size={20} />
-                    {/* Pulsating Ring */}
                     <span className="absolute inset-0 rounded-full border border-[#C27A2F] animate-ping opacity-75"></span>
                   </motion.button>
                 </div>
