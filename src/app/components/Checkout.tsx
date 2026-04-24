@@ -173,11 +173,11 @@ export function Checkout() {
 
         <div className="flex items-center gap-3 text-[#31C48D] mb-8 bg-[#31C48D]/10 w-fit px-4 py-2 rounded-full border border-[#31C48D]/20">
           <ShieldCheck size={18} />
-          <span className="text-sm font-medium tracking-wide">Secure SSL Encrypted Checkout</span>
+          <span className="text-sm font-medium tracking-wide">Secure & Encrypted Checkout</span>
         </div>
 
         <h3 className="text-2xl font-['Playfair_Display'] text-[#ECECEC] mb-2">
-          Express Checkout
+          Secure Checkout
         </h3>
         <p className="text-[#888] text-sm mb-10">
           Enter your Safaricom number to trigger an M-Pesa prompt on your phone.
@@ -217,7 +217,7 @@ export function Checkout() {
               <span className="animate-pulse">Processing Request...</span>
             ) : (
               <>
-                <span className="relative z-10">TRIGGER M-PESA PAYMENT</span>
+                <span className="relative z-10">LIPA NA M-PESA</span>
                 <div className="absolute inset-0 rounded-lg border-2 border-[#D4AF37]/50 animate-pulse"></div>
               </>
             )}
@@ -226,7 +226,7 @@ export function Checkout() {
 
         <div className="mt-8 text-center text-xs text-[#666] flex items-center justify-center gap-2">
           <Lock size={12} />
-          Payments securely processed by Safaricom Daraja API
+          Payments securely processed by Safaricom
         </div>
       </div>
     </div>
