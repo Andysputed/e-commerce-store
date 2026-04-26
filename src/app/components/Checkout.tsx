@@ -6,7 +6,7 @@ import { ShieldCheck, ChevronRight, Lock, Plus, Minus } from "lucide-react";
 import { supabase } from "../context"; // Ensure this matches your project structure
 
 export function Checkout() {
-  const { cart, cartTotal, updateQuantity ,clearCart} = useAppContext();
+  const { cart, cartTotal, updateQuantity, clearCart } = useAppContext();
   const navigate = useNavigate();
   const [phone, setPhone] = useState("+254");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -67,9 +67,10 @@ export function Checkout() {
 
       if (!response.ok) throw new Error("Payment trigger failed");
 
-      // 3. LISTEN FOR SUCCESS (Real-time)
-      // Instead of navigating, we set up a subscription to this specific order
-     // 3. LISTEN FOR SUCCESS (Real-time)
+      // Set a variable for our timeout so we can cancel it if the payment succeeds or fails quickly
+      let timeoutId: ReturnType<typeof setTimeout>;
+
+      // 3. LISTEN FOR SUCCESS OR FAILURE (Real-time)
       const channel = supabase
         .channel(`order-update-${order.id}`)
         .on(
@@ -81,14 +82,34 @@ export function Checkout() {
             filter: `id=eq.${order.id}`,
           },
           (payload) => {
-            if (payload.new.status === 'Paid') {
+            const newStatus = payload.new.status;
+
+            if (newStatus === 'Paid') {
+              // --- HAPPY PATH ---
+              clearTimeout(timeoutId); // Stop the timeout clock
               supabase.removeChannel(channel); // Clean up listener
-              clearCart();                     // <-- EMPTY THE CART HERE
+              clearCart();                     // EMPTY THE CART HERE
               navigate("/success");            // Navigate to success screen
+
+            } else if (newStatus === 'Failed' || newStatus === 'Cancelled') {
+              // --- SAD PATH --- (Wrong PIN, User Cancelled, Insufficient Funds)
+              clearTimeout(timeoutId); // Stop the timeout clock
+              supabase.removeChannel(channel); // Clean up listener
+              setIsProcessing(false); // Stop the spinning loader
+              alert("Payment failed or was cancelled. Please check your M-Pesa balance and PIN, then try again.");
             }
           }
         )
         .subscribe();
+
+      // 4. THE TIMEOUT SAFETY NET
+      // Safaricom STK pushes usually expire after 60 seconds.
+      // If we hear nothing back after 65 seconds, we kill the loader and alert the user.
+      timeoutId = setTimeout(() => {
+        supabase.removeChannel(channel); // Stop listening to avoid ghost updates
+        setIsProcessing(false); // Stop the spinning loader
+        alert("The M-Pesa request timed out. Safaricom might be experiencing delays. Please try again.");
+      }, 65000); 
 
     } catch (error: any) {
       setIsProcessing(false);
