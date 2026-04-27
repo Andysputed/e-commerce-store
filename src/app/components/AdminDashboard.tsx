@@ -161,7 +161,7 @@ export function AdminDashboard() {
   };
 
   const handleDeleteProduct = async (id: string, name: string) => {
-    if (window.confirm(`CRITICAL ACTION: Are you sure you want to delete ${name} from the cellar?`)) {
+    if (window.confirm(`CRITICAL ACTION: Are you sure you want to delete ${name} from the inventory?`)) {
       const { error } = await supabase.from('products').delete().eq('id', id);
       if (error) alert("Error deleting product: " + error.message);
       else fetchAllData();
@@ -243,7 +243,7 @@ export function AdminDashboard() {
         <div className="hidden md:flex items-center gap-3 mb-10 px-2 shrink-0">
           <Database className="text-[#D4AF37]" size={28} />
           <div>
-            <h1 className="text-xl font-['Playfair_Display'] font-bold uppercase tracking-widest">Commander</h1>
+            <h1 className="text-xl font-['Playfair_Display'] font-bold uppercase tracking-widest">Admin Panel</h1>
             <div className="text-[9px] text-[#666] uppercase tracking-[0.2em] font-mono flex items-center gap-1 mt-1">
               <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
               Secure Session
@@ -263,7 +263,7 @@ export function AdminDashboard() {
               className="flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all text-[#888] hover:bg-red-500/10 hover:text-red-500 border border-transparent hover:border-red-500/20"
             >
               <LogOut size={20} />
-              <span className="text-sm tracking-wide uppercase font-bold">Disconnect</span>
+              <span className="text-sm tracking-wide uppercase font-bold">Log Out</span>
             </button>
           </div>
         </div>
@@ -452,7 +452,7 @@ export function AdminDashboard() {
               })}
               {products.length === 0 && !loading && (
                 <div className="col-span-full text-center py-10 text-sm text-[#444] italic">
-                  Cellar is currently empty. Add your first bottle.
+                  Inventory is currently empty. Add your first bottle.
                 </div>
               )}
             </div>
@@ -478,7 +478,7 @@ export function AdminDashboard() {
               <div className="flex items-center gap-3 mb-6">
                 <Database className="text-[#D4AF37]" size={24} />
                 <h2 className="text-xl font-['Playfair_Display'] font-bold text-[#ECECEC]">
-                  {productForm.id ? "Edit Cellar Item" : "Register New Bottle"}
+                  {productForm.id ? "Edit Inventory Item" : "Register New Bottle"}
                 </h2>
               </div>
 

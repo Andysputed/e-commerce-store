@@ -24,16 +24,13 @@ type CartItem = {
   quantity: number;
 };
 
-// --- TUTOR NOTE: STEP 1 ---
-// We add clearCart to our interface. This tells TypeScript, 
-// "Hey, anyone who uses this context will have access to a function called clearCart."
 interface AppContextType {
   cart: CartItem[];
   products: Product[];
   isLoading: boolean;
   addToCart: (product: Product) => void;
   updateQuantity: (productId: string, delta: number) => void;
-  clearCart: () => void; // <-- NEW: Added here
+  clearCart: () => void;
   cartCount: number;
   cartTotal: number;
 }
@@ -43,18 +40,14 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // The cart state holds all the items. 
   const [cart, setCart] = useState<CartItem[]>([]);
 
   // Fetch products from Supabase database when the app loads
-  useEffect(() => {
+ useEffect(() => {
     const fetchProducts = async () => {
       try {
         setIsLoading(true);
-        const { data, error } = await supabase
-          .from('products')
-          .select('*');
+        const { data, error } = await supabase.from('products').select('*');
 
         if (error) throw error;
 
@@ -67,7 +60,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             image: item.image,
             volume: item.volume,
             alcoholContent: item.alcohol_content,
-            stock: item.stock,
+            stock: item.stock, // Ensure stock is fetched
             description: item.description
           }));
           setProducts(mappedProducts);
@@ -80,6 +73,27 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     };
 
     fetchProducts();
+
+    // 🔥 NEW: Listen for Stock Updates in Real-Time
+    const channel = supabase
+      .channel('public:products')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'products' },
+        (payload) => {
+          // Whenever stock changes on the backend, instantly update React state!
+          setProducts((current) => 
+            current.map((p) => 
+              p.id === payload.new.id ? { ...p, stock: payload.new.stock } : p
+            )
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const addToCart = (product: Product) => {
@@ -108,14 +122,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  // --- TUTOR NOTE: STEP 2 ---
-  // Here is the actual action. When clearCart is called, we take 
-  // the cart state and simply set it to an empty array.
   const clearCart = () => {
     setCart([]);
   };
 
-  // Calculate totals on the fly based on what is currently in the cart
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
   const cartTotal = cart.reduce(
     (acc, item) => acc + item.product.price * item.quantity,
@@ -123,16 +133,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   );
 
   return (
-    // --- TUTOR NOTE: STEP 3 ---
-    // We add clearCart to the value object so that other components 
-    // (like your Checkout page) can grab it and use it!
     <AppContext.Provider value={{ 
       cart, 
       products, 
       isLoading, 
       addToCart, 
       updateQuantity, 
-      clearCart,     // <-- NEW: Exposed to the rest of the app here
+      clearCart, 
       cartCount, 
       cartTotal 
     }}>
