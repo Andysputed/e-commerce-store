@@ -223,7 +223,7 @@ export function AdminDashboard() {
       <div className="md:hidden bg-[#0D0D0D] border-b border-[#2A2A2A] p-4 flex justify-between items-center sticky top-0 z-[100]">
         <div className="flex items-center gap-2">
           <Database className="text-[#D4AF37]" size={20} />
-          <span className="font-['Playfair_Display'] font-bold text-lg uppercase tracking-wider">Cellar</span>
+          <span className="font-['Playfair_Display'] font-bold text-lg uppercase tracking-wider">Admin Panel</span>
         </div>
         <div className="flex items-center gap-4">
           <div className="relative cursor-pointer">
