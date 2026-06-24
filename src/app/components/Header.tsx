@@ -15,8 +15,8 @@ export function Header({ cartCount, onCartClick, onLogoClick }: HeaderProps) {
           className="text-[#D4A574] tracking-widest hover:opacity-80 transition-opacity"
           style={{ fontFamily: "'Cormorant Garamond', serif" }}
         >
-          <h1 className="text-2xl font-semibold">BANDAPTAI</h1>
-          <div className="text-xs tracking-[0.2em] opacity-90">LOUNGE</div>
+          <h1 className="text-2xl font-semibold"></h1>
+          <div className="text-xs tracking-[0.2em] opacity-90">Liquor Store</div>
         </button>
 
         <button

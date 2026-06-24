@@ -20,7 +20,7 @@ export function Layout() {
             </button>
           )}
           <Link to="/" className="text-[#D4AF37] text-xl md:text-2xl font-['Playfair_Display'] font-semibold tracking-wide flex items-center gap-2">
-            BANDAPTAI
+            Luxury Liquor
             <span className="hidden md:inline text-xs font-['Inter'] text-[#C27A2F] uppercase tracking-widest mt-1">Lounge & Store</span>
           </Link>
         </div>
